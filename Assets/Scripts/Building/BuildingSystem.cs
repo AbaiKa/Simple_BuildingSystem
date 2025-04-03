@@ -8,15 +8,21 @@ public class BuildingSystem : MonoBehaviour
 
     private Dictionary<string, ABuildingPositionResolver> resolvers = new Dictionary<string, ABuildingPositionResolver>();
 
+    private AInput input;
+
     private Building current;
     private BuildingGrid currentGrid;
     private ABuildingPositionResolver currentResolver;
-    public void Init()
+    private BuildingPositionProperties currentProperties;
+    public void Init(AInput input)
     {
+        this.input = input;
         var ground = new GroundBuildingPositionResolver();
         var wall = new WallBuildingPositionResolver();
         resolvers.Add(ground.ID, ground);
         resolvers.Add(wall.ID, wall);
+
+        input.onClick.AddListener(OnClick);
     }
     private void Update()
     {
@@ -31,31 +37,17 @@ public class BuildingSystem : MonoBehaviour
                 current.transform.position = props.position;
                 current.SetTransparent(props.isAllowed);
 
-                if (props.isAllowed && Input.GetMouseButtonDown(0))
-                {
-                    FinishBuilding(props.x, props.y);
-                }
+                currentProperties = props;
             }
         }
     }
-    private BuildingPositionProperties GetProps(BuildingGrid grid, Building building, Ray ray)
+
+    private void OnClick(Vector2 position)
     {
-        var props = new BuildingPositionProperties();
-        if(currentResolver != null) 
+        if (current != null)
         {
-            currentResolver.GetPositionProperties(grid, building, ray);
+            FinishBuilding(currentProperties.x, currentProperties.y);
         }
-        else
-        {
-            Vector3 mousePosition = Input.mousePosition;
-            mousePosition.z = 10f;
-            Vector3 targetPosition = Camera.main.ScreenToWorldPoint(mousePosition);
-
-            props.isAllowed = false;
-            props.position = targetPosition;
-        }
-
-        return props;
     }
     public void StartBuilding(Building buildingPrefab)
     {
@@ -88,6 +80,25 @@ public class BuildingSystem : MonoBehaviour
 
         current.SetNormal();
         current = null;
+    }
+    private BuildingPositionProperties GetProps(BuildingGrid grid, Building building, Ray ray)
+    {
+        var props = new BuildingPositionProperties();
+        if (currentResolver != null)
+        {
+            currentResolver.GetPositionProperties(grid, building, ray);
+        }
+        else
+        {
+            Vector3 mousePosition = Input.mousePosition;
+            mousePosition.z = 10f;
+            Vector3 targetPosition = Camera.main.ScreenToWorldPoint(mousePosition);
+
+            props.isAllowed = false;
+            props.position = targetPosition;
+        }
+
+        return props;
     }
     private BuildingGrid GetGrid()
     {
