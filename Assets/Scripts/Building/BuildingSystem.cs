@@ -3,8 +3,13 @@ using UnityEngine;
 
 public class BuildingSystem : MonoBehaviour
 {
+    #region Props
+    [Header("Grid")]
     [SerializeField] private LayerMask gridMask;
     [SerializeField, Range(0, 10)] private float gridTargetingRange;
+    [Header("Building")]
+    [SerializeField, Range(0, 90)] private float rotationAngle;
+    [SerializeField] private Building prefab;
 
     private Dictionary<string, ABuildingPositionResolver> resolvers = new Dictionary<string, ABuildingPositionResolver>();
 
@@ -14,24 +19,21 @@ public class BuildingSystem : MonoBehaviour
     private BuildingGrid currentGrid;
     private ABuildingPositionResolver currentResolver;
     private BuildingPositionProperties currentProperties;
-    public void Init(AInput input)
-    {
-        this.input = input;
-        var ground = new GroundBuildingPositionResolver();
-        var wall = new WallBuildingPositionResolver();
-        resolvers.Add(ground.ID, ground);
-        resolvers.Add(wall.ID, wall);
-
-        input.onClick.AddListener(OnClick);
-    }
+    #endregion
+    #region Methods
+    #region Unity
     private void Update()
     {
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            StartBuilding(prefab);
+        }
         if (current != null)
         {
             currentGrid = GetGrid();
             if (currentGrid != null)
             {
-                Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+                Ray ray = Camera.main.ScreenPointToRay(new Vector3(Screen.width / 2, Screen.height / 2, 0));
                 var props = GetProps(currentGrid, current, ray);
 
                 current.transform.position = props.position;
@@ -41,12 +43,37 @@ public class BuildingSystem : MonoBehaviour
             }
         }
     }
+    #endregion
+    #region Public
+    public void Init(AInput input)
+    {
+        this.input = input;
+        var ground = new GroundBuildingPositionResolver();
+        var wall = new WallBuildingPositionResolver();
+        resolvers.Add(ground.ID, ground);
+        resolvers.Add(wall.ID, wall);
 
+        input.onClick.AddListener(OnClick);
+        input.onScroll.AddListener(OnScroll);
+    }
+    #endregion
+    #region Private
     private void OnClick(Vector2 position)
     {
         if (current != null)
         {
             FinishBuilding(currentProperties.x, currentProperties.y);
+        }
+    }
+    private void OnScroll(float scroll)
+    {
+        if (current != null)
+        {
+            if (scroll != 0)
+            {
+                float angle = scroll > 0 ? rotationAngle : -rotationAngle;
+                current.transform.Rotate(0, angle, 0, Space.World);
+            }
         }
     }
     public void StartBuilding(Building buildingPrefab)
@@ -81,6 +108,8 @@ public class BuildingSystem : MonoBehaviour
         current.SetNormal();
         current = null;
     }
+
+    #region Get
     private BuildingPositionProperties GetProps(BuildingGrid grid, Building building, Ray ray)
     {
         var props = new BuildingPositionProperties();
@@ -122,4 +151,7 @@ public class BuildingSystem : MonoBehaviour
 
         return closestGrid;
     }
+    #endregion
+    #endregion
+    #endregion
 }

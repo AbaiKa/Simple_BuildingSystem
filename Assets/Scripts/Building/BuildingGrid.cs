@@ -24,17 +24,21 @@ public class BuildingGrid : MonoBehaviour
 
         Vector3 offset = new Vector3(offsetX, offsetY, offsetZ);
 
+        Vector3 transformedOffset = transform.TransformPoint(offset);
+
         for (int x = 0; x <= Size.x; x++)
         {
-            Vector3 start = new Vector3(x, 0, 0) + offset;
-            Vector3 end = new Vector3(x, horizontal ? 0 : Size.y, horizontal ? Size.y : 0) + offset;
+            Vector3 start = transform.TransformPoint(new Vector3(x, 0, 0) + offset);
+            Vector3 end = transform.TransformPoint(new Vector3(x, horizontal ? 0 : Size.y, horizontal ? Size.y : 0) + offset);
             Gizmos.DrawLine(start, end);
         }
+
         for (int y = 0; y <= Size.y; y++)
         {
-            Vector3 start = new Vector3(0, horizontal ? 0 : y, horizontal ? y : 0) + offset;
-            Vector3 end = new Vector3(Size.x, horizontal ? 0 : y, horizontal ? y : 0) + offset;
+            Vector3 start = transform.TransformPoint(new Vector3(0, horizontal ? 0 : y, horizontal ? y : 0) + offset);
+            Vector3 end = transform.TransformPoint(new Vector3(Size.x, horizontal ? 0 : y, horizontal ? y : 0) + offset);
             Gizmos.DrawLine(start, end);
         }
     }
+
 }
