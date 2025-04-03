@@ -8,12 +8,10 @@ public class WallBuildingPositionResolver : ABuildingPositionResolver
     {
         var props = new BuildingPositionProperties();
 
-        var wallPlane = new Plane(Vector3.forward, new Vector3(0, grid.Offset.y, 0));
-
-        if (wallPlane.Raycast(ray, out float position))
+        if (Physics.Raycast(ray, out RaycastHit hit))
         {
             bool available = true;
-            Vector3 worldPosition = ray.GetPoint(position);
+            Vector3 worldPosition = hit.point;
 
             int x = Mathf.RoundToInt(worldPosition.x - grid.Offset.x);
             int y = Mathf.RoundToInt(worldPosition.y - grid.Offset.y);
@@ -25,25 +23,16 @@ public class WallBuildingPositionResolver : ABuildingPositionResolver
 
             if (building.AllowBuildingAbove)
             {
-                RaycastHit hit;
+                RaycastHit additionalHit;
 
-                if (Physics.Raycast(ray, out hit))
+                if (Physics.Raycast(ray, out additionalHit))
                 {
-                    GameObject targetObject = hit.collider.gameObject;
+                    GameObject targetObject = additionalHit.collider.gameObject;
 
                     if (targetObject.TryGetComponent(out Building target))
                     {
-                        depth = target.transform.position.z + (grid.Positive ? target.Size.x : -target.Size.x);
+                        depth = grid.Buildings[x, y].transform.position.z + (grid.Positive ? grid.Buildings[x, y].Size.x : -grid.Buildings[x, y].Size.x);
                     }
-                }
-
-                if (available && IsPlaceTaken(grid.Buildings, building, x, y))
-                {
-                    depth = grid.Buildings[x, y].transform.position.z + (grid.Positive ? grid.Buildings[x, y].Size.x : -grid.Buildings[x, y].Size.x);
-                }
-                else
-                {
-                    depth = grid.Offset.z;
                 }
             }
 
@@ -52,6 +41,7 @@ public class WallBuildingPositionResolver : ABuildingPositionResolver
             props.isAllowed = available;
             props.position = new Vector3(x + grid.Offset.x, y + grid.Offset.y, depth);
         }
+
 
         return props;
     }

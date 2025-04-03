@@ -6,7 +6,6 @@ public class BuildingGrid : MonoBehaviour
     [field: SerializeField] public Vector3 Offset { get; private set; }
     [field: SerializeField] public bool Positive { get; private set; }
     [field: SerializeField] public string ResolverID { get; private set; }
-    [SerializeField] private bool horizontal;
 
     public Building[,] Buildings { get; private set; }
     private void Start()
@@ -19,8 +18,8 @@ public class BuildingGrid : MonoBehaviour
         Gizmos.color = Color.green;
 
         float offsetX = Offset.x - 0.5f;
-        float offsetY = horizontal ? Offset.z : Offset.y - 0.5f;
-        float offsetZ = horizontal ? Offset.y - 0.5f : Offset.z;
+        float offsetY = Offset.z;
+        float offsetZ = Offset.y - 0.5f;
 
         Vector3 offset = new Vector3(offsetX, offsetY, offsetZ);
 
@@ -29,14 +28,14 @@ public class BuildingGrid : MonoBehaviour
         for (int x = 0; x <= Size.x; x++)
         {
             Vector3 start = transform.TransformPoint(new Vector3(x, 0, 0) + offset);
-            Vector3 end = transform.TransformPoint(new Vector3(x, horizontal ? 0 : Size.y, horizontal ? Size.y : 0) + offset);
+            Vector3 end = transform.TransformPoint(new Vector3(x, 0, Size.y) + offset);
             Gizmos.DrawLine(start, end);
         }
 
         for (int y = 0; y <= Size.y; y++)
         {
-            Vector3 start = transform.TransformPoint(new Vector3(0, horizontal ? 0 : y, horizontal ? y : 0) + offset);
-            Vector3 end = transform.TransformPoint(new Vector3(Size.x, horizontal ? 0 : y, horizontal ? y : 0) + offset);
+            Vector3 start = transform.TransformPoint(new Vector3(0, 0, y) + offset);
+            Vector3 end = transform.TransformPoint(new Vector3(Size.x, 0, y) + offset);
             Gizmos.DrawLine(start, end);
         }
     }

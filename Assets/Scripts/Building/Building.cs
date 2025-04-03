@@ -8,12 +8,14 @@ public class Building : MonoBehaviour
     [field: SerializeField] public bool AllowBuildingAbove {  get; private set; }
     [field: SerializeField] public string ResolverID { get; private set; }
 
+    public Vector2Int Position { get; private set; }
     public void Init()
     {
         colliderComponent.enabled = false;
     }
-    public void SetTransparent(bool available)
+    public void UpdateBuilding(int x, int y, bool available)
     {
+        Position = new Vector2Int(x, y);
         if (available)
         {
             rendererComponent.material.color = new Color(0, 1f, 0f, 0.3f);

@@ -24,23 +24,17 @@ public class BuildingSystem : MonoBehaviour
     #region Unity
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Space))
-        {
-            StartBuilding(prefab);
-        }
         if (current != null)
         {
             currentGrid = GetGrid();
-            if (currentGrid != null)
-            {
-                Ray ray = Camera.main.ScreenPointToRay(new Vector3(Screen.width / 2, Screen.height / 2, 0));
-                var props = GetProps(currentGrid, current, ray);
+            Ray ray = Camera.main.ScreenPointToRay(new Vector3(Screen.width / 2, Screen.height / 2, 0));
+            Debug.DrawRay(ray.origin, ray.direction * 100f, Color.red);
+            var props = GetProps(currentGrid, current, ray);
 
-                current.transform.position = props.position;
-                current.SetTransparent(props.isAllowed);
+            current.transform.position = props.position;
+            current.UpdateBuilding(props.x, props.y, props.isAllowed);
 
-                currentProperties = props;
-            }
+            currentProperties = props;
         }
     }
     #endregion
@@ -60,9 +54,12 @@ public class BuildingSystem : MonoBehaviour
     #region Private
     private void OnClick(Vector2 position)
     {
-        if (current != null)
+        if (current != null && currentProperties != null)
         {
-            FinishBuilding(currentProperties.x, currentProperties.y);
+            if (currentProperties.isAllowed)
+            {
+                FinishBuilding(currentProperties.x, currentProperties.y);
+            }
         }
     }
     private void OnScroll(float scroll)
@@ -113,14 +110,14 @@ public class BuildingSystem : MonoBehaviour
     private BuildingPositionProperties GetProps(BuildingGrid grid, Building building, Ray ray)
     {
         var props = new BuildingPositionProperties();
-        if (currentResolver != null)
+        if (grid != null && currentResolver != null)
         {
-            currentResolver.GetPositionProperties(grid, building, ray);
+            props = currentResolver.GetPositionProperties(grid, building, ray);
         }
         else
         {
             Vector3 mousePosition = Input.mousePosition;
-            mousePosition.z = 10f;
+            mousePosition.z = 4f;
             Vector3 targetPosition = Camera.main.ScreenToWorldPoint(mousePosition);
 
             props.isAllowed = false;
