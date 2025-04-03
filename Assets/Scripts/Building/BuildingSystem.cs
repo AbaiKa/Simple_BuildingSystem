@@ -1,19 +1,21 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
+using Zenject;
 
 public class BuildingSystem : MonoBehaviour
 {
     #region Props
     [Header("Grid")]
     [SerializeField] private LayerMask gridMask;
-    [SerializeField, Range(0, 10)] private float gridTargetingRange;
+    [SerializeField, Range(0, 10)] private float gridTargetingRange = 7;
     [Header("Building")]
-    [SerializeField, Range(0, 90)] private float rotationAngle;
+    [SerializeField, Range(0, 90)] private float rotationAngle = 45;
     [SerializeField] private Building prefab;
 
+    public UnityEvent onStart = new UnityEvent();
+    public UnityEvent onFinish = new UnityEvent();
     private Dictionary<string, ABuildingPositionResolver> resolvers = new Dictionary<string, ABuildingPositionResolver>();
-
-    private AInput input;
 
     private Building current;
     private BuildingGrid currentGrid;
@@ -38,10 +40,10 @@ public class BuildingSystem : MonoBehaviour
         }
     }
     #endregion
-    #region Public
-    public void Init(AInput input)
+    #region Private
+    [Inject]
+    private void Construct(AInput input)
     {
-        this.input = input;
         var ground = new GroundBuildingPositionResolver();
         var wall = new WallBuildingPositionResolver();
         resolvers.Add(ground.ID, ground);
@@ -50,8 +52,6 @@ public class BuildingSystem : MonoBehaviour
         input.onClick.AddListener(OnClick);
         input.onScroll.AddListener(OnScroll);
     }
-    #endregion
-    #region Private
     private void OnClick(Vector2 position)
     {
         if (current != null && currentProperties != null)
@@ -91,6 +91,8 @@ public class BuildingSystem : MonoBehaviour
         {
             currentResolver = null;
         }
+
+        onStart?.Invoke();
     }
     private void FinishBuilding(int placeX, int placeY)
     {
@@ -104,6 +106,8 @@ public class BuildingSystem : MonoBehaviour
 
         current.SetNormal();
         current = null;
+
+        onFinish?.Invoke();
     }
 
     #region Get

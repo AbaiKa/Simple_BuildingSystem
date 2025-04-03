@@ -1,14 +1,27 @@
 using UnityEngine;
+using UnityEngine.Events;
+using Zenject;
 
 public class GameManager : MonoBehaviour
 {
-    [SerializeField] private Player player;
-    [SerializeField] private BuildingSystem buildingSystem;
-    [SerializeField] private AInput input;
+    public UnityEvent<GameState> onStateChanged = new UnityEvent<GameState>();
 
-    private void Awake()
+    private GameState gameState;
+    [Inject]
+    private void Construct(BuildingSystem buildingSystem)
     {
-        player.Init(input);
-        buildingSystem.Init(input);
+        buildingSystem.onStart.AddListener(() => { SetState(GameState.Build); });
+        buildingSystem.onFinish.AddListener(() => { SetState(GameState.None); });
     }
+    public void SetState(GameState state)
+    {
+        gameState = state;
+        onStateChanged?.Invoke(state);
+    }
+}
+
+public enum GameState
+{
+    None,
+    Build,
 }

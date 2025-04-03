@@ -1,10 +1,16 @@
 using UnityEngine;
+using Zenject;
 
 public class BuildingProvider : MonoBehaviour
 {
-    // “ут мог быть Inject
     [SerializeField] private Building prefab;
-    [SerializeField] private BuildingSystem buildingSystem;
+    
+    private BuildingSystem buildingSystem;
+    [Inject]
+    private void Construct(BuildingSystem buildingSystem)
+    {
+        this.buildingSystem = buildingSystem;
+    }
     private void OnMouseDown()
     {
         buildingSystem.StartBuilding(prefab);
